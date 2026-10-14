@@ -1,0 +1,115 @@
+/* Сброс базовых отступов и настройка шрифтов */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+/* Контейнер карточки */
+.container {
+  background: #ffffff;
+  padding: 32px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+  width: 100%;
+  max-width: 480px;
+  border: 1px solid #e2e8f0;
+}
+
+/* Заголовки и текст */
+h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+p {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+/* Формы и поля ввода */
+.form-group {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #334155;
+  margin-bottom: 6px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus {
+  border-color: #3ecf8e; /* Фирменный зеленый цвет Supabase */
+  box-shadow: 0 0 0 3px rgba(62, 207, 142, 0.2);
+}
+
+/* Кнопки */
+.btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #3ecf8e;
+  color: #0d2818;
+  font-weight: 600;
+  font-size: 15px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  margin-top: 8px;
+}
+
+.btn:hover {
+  background-color: #34b27b;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+/* Списки данных */
+.data-list {
+  list-style: none;
+  margin-top: 16px;
+}
+
+.data-item {
+  padding: 12px;
+  background-color: #f1f5f9;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
