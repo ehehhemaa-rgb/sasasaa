@@ -6,12 +6,13 @@
   <title>Каталог products</title>
   <link rel="stylesheet" href="styles.css">
   <style>
-    .search-container {
+    .info-bar {
       display: flex;
+      justify-content: space-between;
       gap: 12px;
       margin-bottom: 24px;
     }
-    .search-container input, .search-container select {
+    .info-card {
       flex: 1;
       padding: 12px 16px;
       background-color: #0b0f19;
@@ -19,11 +20,11 @@
       border-radius: 8px;
       color: #ffffff;
       font-size: 14px;
-      outline: none;
+      text-align: center;
     }
-    .search-container input:focus, .search-container select:focus {
-      border-color: #3ecf8e;
-      box-shadow: 0 0 0 3px rgba(62, 207, 142, 0.15);
+    .info-card span {
+      color: #3ecf8e;
+      font-weight: bold;
     }
     .table-wrapper {
       max-height: 400px;
@@ -55,94 +56,80 @@
 
   <div class="container-dark" style="max-width: 850px;">
     <h1>Каталог products</h1>
-    <p>Все записи из вашей таблицы Supabase</p>
+    <p>Информация о структуре и данных из Supabase</p>
 
-    <div class="search-container">
-      <input type="text" id="searchInput" placeholder="Поиск по всем полям...">
-      <select id="statusBadge" style="cursor: default;">
-        <option>ONLINE</option>
-      </select>
+    <!-- Блок со счетчиками столбцов и таблиц (строк) -->
+    <div class="info-bar">
+      <div class="info-card">
+        Столбцов: <span id="colCount">5</span>
+      </div>
+      <div class="info-card">
+        Строк в таблице: <span id="rowCount">0</span>
+      </div>
+      <div class="info-card">
+        Статус: <span id="statusBadge" style="color: #3ecf8e;">ONLINE</span>
+      </div>
     </div>
 
     <div class="table-wrapper">
       <table id="dataTable">
-        <thead id="tableHeader">
+        <thead>
           <tr>
-            <th style="text-align: center; color: #94a3b8;">Загрузка структуры...</th>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Total</th>
           </tr>
         </thead>
         <tbody id="tableBody">
           <tr>
-            <td style="text-align: center; color: #94a3b8;">Получение данных из Supabase...</td>
+            <td colspan="5" style="text-align: center; color: #94a3b8;">Загрузка данных...</td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.5net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = 'https://iizubwoxaposhzicoiiz.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_0LfD-klWybDlU2xrV_TSdA_z_QQI7jI';
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    
-    // Установлено имя вашей таблицы: products
     const tableName = 'products'; 
 
-    let allData = [];
-    let columns = [];
-
     async function fetchData() {
+      const tableBody = document.getElementById('tableBody');
+      const rowCountEl = document.getElementById('rowCount');
+      
       try {
         const { data, error } = await supabaseClient.from(tableName).select('*');
         if (error) throw error;
 
-        allData = data || [];
+        const rows = data || [];
+        rowCountEl.textContent = rows.length;
 
-        if (allData.length > 0) {
-          columns = Object.keys(allData[0]);
+        if (rows.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94a3b8;">Таблица пуста</td></tr>`;
+          return;
         }
 
-        renderTable(allData);
+        tableBody.innerHTML = rows.map(row => {
+          return `<tr>
+            <td>${row.id ?? ''}</td>
+            <td>${row.name ?? ''}</td>
+            <td>${row.price ?? ''}</td>
+            <td>${row.quantity ?? ''}</td>
+            <td>${row.total ?? ''}</td>
+          </tr>`;
+        }).join('');
+
       } catch (err) {
         console.error(err);
-        document.getElementById('tableBody').innerHTML = `<tr><td style="text-align: center; color: #ef4444;">Ошибка загрузки. Проверьте имя таблицы (${tableName})</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #ef4444;">Ошибка: ${err.message}</td></tr>`;
       }
     }
-
-    function renderTable(data) {
-      const tableHeader = document.getElementById('tableHeader');
-      const tableBody = document.getElementById('tableBody');
-
-      if (columns.length === 0) {
-        tableHeader.innerHTML = '<tr><th>Информация</th></tr>';
-        tableBody.innerHTML = '<tr><td style="text-align: center; color: #94a3b8;">Таблица products пуста</td></tr>';
-        return;
-      }
-
-      tableHeader.innerHTML = `<tr>${columns.map(col => `<th>${col}</th>`).join('')}</tr>`;
-
-      if (data.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="${columns.length}" style="text-align: center; color: #94a3b8;">Ничего не найдено по вашему запросу</td></tr>`;
-        return;
-      }
-
-      tableBody.innerHTML = data.map(row => {
-        return `<tr>${columns.map(col => `<td>${row[col] !== null && row[col] !== undefined ? row[col] : ''}</td>`).join('')}</tr>`;
-      }).join('');
-    }
-
-    document.getElementById('searchInput').addEventListener('input', (e) => {
-      const query = e.target.value.toLowerCase();
-      const filtered = allData.filter(row => {
-        return Object.values(row).some(val => 
-          String(val || '').toLowerCase().includes(query)
-        );
-      });
-      renderTable(filtered);
-    });
 
     document.addEventListener('DOMContentLoaded', fetchData);
   </script>
