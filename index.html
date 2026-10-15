@@ -8,31 +8,87 @@
 </head>
 <body>
 
-  <div class="container">
-    <h1>Авторизация / Форма</h1>
-    <p>Подключение к вашей базе Supabase</p>
+  <div class="container-dark">
+    <h1>Авторизация</h1>
+    <p>Подключение к Supabase</p>
 
-    <form>
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" placeholder="you@example.com" required>
+    <div class="input-group">
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="you@example.com">
+    </div>
+
+    <div class="input-group">
+      <label for="password">Пароль</label>
+      <input type="password" id="password" placeholder="••••••••">
+    </div>
+
+    <button class="btn-neon" id="submitBtn">Войти</button>
+
+    <div class="logs-container">
+      <div class="log-item">
+        <span>Статус соединения</span>
+        <span class="badge-success" id="statusBadge">CHECKING...</span>
       </div>
-
-      <div class="form-group">
-        <label for="password">Пароль</label>
-        <input type="password" id="password" placeholder="••••••••" required>
-      </div>
-
-      <button type="submit" class="btn">Войти</button>
-    </form>
-
-    <ul class="data-list" style="margin-top: 24px;">
-      <li class="data-item">
-        <span>Пример записи #1</span>
-        <strong style="color: #3ecf8e;">Активно</strong>
-      </li>
-    </ul>
+    </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = 'https://iizubwoxaposhzicoiiz.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_0LfD-klWybDlU2xrV_TSdA_z_QQI7jI';
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const statusBadge = document.getElementById('statusBadge');
+      const submitBtn = document.getElementById('submitBtn');
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+
+      try {
+        const { error } = await supabaseClient.from('profiles').select('*').limit(1);
+        if (error && error.code !== 'PGRST116') {
+          statusBadge.textContent = 'ONLINE';
+          statusBadge.style.color = '#3ecf8e';
+        } else {
+          statusBadge.textContent = 'CONNECTED';
+          statusBadge.style.color = '#3ecf8e';
+        }
+      } catch (err) {
+        statusBadge.textContent = 'OFFLINE';
+        statusBadge.style.color = '#ef4444';
+      }
+
+      submitBtn.addEventListener('click', async () => {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
+
+        if (!email || !password) {
+          alert('Заполните все поля!');
+          return;
+        }
+
+        submitBtn.textContent = 'Загрузка...';
+        submitBtn.disabled = true;
+
+        try {
+          const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email,
+            password,
+          });
+
+          if (error) throw error;
+
+          alert('Успешный вход!');
+          console.log(data);
+        } catch (error) {
+          alert('Ошибка: ' + error.message);
+        } finally {
+          submitBtn.textContent = 'Войти';
+          submitBtn.disabled = false;
+        }
+      });
+    });
+  </script>
 </body>
 </html>
