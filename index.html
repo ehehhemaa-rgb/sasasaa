@@ -39,14 +39,25 @@
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    const TABLE_STRUCTURE = {
+      tableName: 'profiles',
+      columns: [
+        { name: 'id', type: 'uuid', primaryKey: true },
+        { name: 'email', type: 'text', nullable: false },
+        { name: 'created_at', type: 'timestamp', default: 'now()' }
+      ]
+    };
+
     document.addEventListener('DOMContentLoaded', async () => {
       const statusBadge = document.getElementById('statusBadge');
       const submitBtn = document.getElementById('submitBtn');
       const emailInput = document.getElementById('email');
       const passwordInput = document.getElementById('password');
 
+      console.log('Структура таблицы:', TABLE_STRUCTURE);
+
       try {
-        const { error } = await supabaseClient.from('profiles').select('*').limit(1);
+        const { error } = await supabaseClient.from(TABLE_STRUCTURE.tableName).select('*').limit(1);
         if (error && error.code !== 'PGRST116') {
           statusBadge.textContent = 'ONLINE';
           statusBadge.style.color = '#3ecf8e';
