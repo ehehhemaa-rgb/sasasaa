@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Каталог и поиск</title>
+  <title>Каталог products</title>
   <link rel="stylesheet" href="styles.css">
   <style>
     .search-container {
@@ -25,89 +25,121 @@
       border-color: #3ecf8e;
       box-shadow: 0 0 0 3px rgba(62, 207, 142, 0.15);
     }
+    .table-wrapper {
+      max-height: 400px;
+      overflow-y: auto;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 14px;
+    }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #1f2937;
+    }
+    th {
+      color: #94a3b8;
+      position: sticky;
+      top: 0;
+      background-color: #111827;
+    }
+    td {
+      color: #e2e8f0;
+    }
   </style>
 </head>
 <body>
 
-  <div class="container-dark" style="max-width: 700px;">
-    <h1>Каталог данных</h1>
-    <p>Поиск по таблице Supabase</p>
+  <div class="container-dark" style="max-width: 850px;">
+    <h1>Каталог products</h1>
+    <p>Все записи из вашей таблицы Supabase</p>
 
     <div class="search-container">
-      <input type="text" id="searchInput" placeholder="Введите для поиска...">
+      <input type="text" id="searchInput" placeholder="Поиск по всем полям...">
       <select id="statusBadge" style="cursor: default;">
         <option>ONLINE</option>
       </select>
     </div>
 
-    <div style="overflow-x: auto;">
-      <table id="dataTable" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
-        <thead>
-          <tr style="border-bottom: 1px solid #1f2937; color: #94a3b8;">
-            <th style="padding: 12px;">ID</th>
-            <th style="padding: 12px;">Email / Название</th>
-            <th style="padding: 12px;">Дата</th>
+    <div class="table-wrapper">
+      <table id="dataTable">
+        <thead id="tableHeader">
+          <tr>
+            <th style="text-align: center; color: #94a3b8;">Загрузка структуры...</th>
           </tr>
         </thead>
         <tbody id="tableBody">
           <tr>
-            <td colspan="3" style="padding: 20px; text-align: center; color: #94a3b8;">Загрузка данных...</td>
+            <td style="text-align: center; color: #94a3b8;">Получение данных из Supabase...</td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.5net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = 'https://iizubwoxaposhzicoiiz.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_0LfD-klWybDlU2xrV_TSdA_z_QQI7jI';
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const tableName = 'profiles'; // Измените на название вашей таблицы, если нужно
+    
+    // Установлено имя вашей таблицы: products
+    const tableName = 'products'; 
 
     let allData = [];
+    let columns = [];
 
     async function fetchData() {
-      const tableBody = document.getElementById('tableBody');
       try {
         const { data, error } = await supabaseClient.from(tableName).select('*');
         if (error) throw error;
 
         allData = data || [];
+
+        if (allData.length > 0) {
+          columns = Object.keys(allData[0]);
+        }
+
         renderTable(allData);
       } catch (err) {
         console.error(err);
-        tableBody.innerHTML = `<tr><td colspan="3" style="padding: 20px; text-align: center; color: #ef4444;">Ошибка загрузки данных</td></tr>`;
+        document.getElementById('tableBody').innerHTML = `<tr><td style="text-align: center; color: #ef4444;">Ошибка загрузки. Проверьте имя таблицы (${tableName})</td></tr>`;
       }
     }
 
     function renderTable(data) {
+      const tableHeader = document.getElementById('tableHeader');
       const tableBody = document.getElementById('tableBody');
-      if (data.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="3" style="padding: 20px; text-align: center; color: #94a3b8;">Ничего не найдено</td></tr>`;
+
+      if (columns.length === 0) {
+        tableHeader.innerHTML = '<tr><th>Информация</th></tr>';
+        tableBody.innerHTML = '<tr><td style="text-align: center; color: #94a3b8;">Таблица products пуста</td></tr>';
         return;
       }
 
-      tableBody.innerHTML = '';
-      data.forEach(row => {
-        const tr = document.createElement('tr');
-        tr.style.borderBottom = '1px solid #1f2937';
-        tr.innerHTML = `
-          <td style="padding: 12px; color: #e2e8f0;">${row.id || ''}</td>
-          <td style="padding: 12px; color: #e2e8f0;">${row.email || row.title || '—'}</td>
-          <td style="padding: 12px; color: #94a3b8;">${row.created_at ? new Date(row.created_at).toLocaleString() : '—'}</td>
-        `;
-        tableBody.appendChild(tr);
-      });
+      tableHeader.innerHTML = `<tr>${columns.map(col => `<th>${col}</th>`).join('')}</tr>`;
+
+      if (data.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="${columns.length}" style="text-align: center; color: #94a3b8;">Ничего не найдено по вашему запросу</td></tr>`;
+        return;
+      }
+
+      tableBody.innerHTML = data.map(row => {
+        return `<tr>${columns.map(col => `<td>${row[col] !== null && row[col] !== undefined ? row[col] : ''}</td>`).join('')}</tr>`;
+      }).join('');
     }
 
     document.getElementById('searchInput').addEventListener('input', (e) => {
       const query = e.target.value.toLowerCase();
       const filtered = allData.filter(row => {
-        const val1 = String(row.id || '').toLowerCase();
-        const val2 = String(row.email || row.title || '').toLowerCase();
-        return val1.includes(query) || val2.includes(query);
+        return Object.values(row).some(val => 
+          String(val || '').toLowerCase().includes(query)
+        );
       });
       renderTable(filtered);
     });
